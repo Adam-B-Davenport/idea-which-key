@@ -1,5 +1,6 @@
 package eu.theblob42.idea.whichkey.config
 
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
@@ -65,13 +66,13 @@ object PopupConfig {
      *
      * If there are no 'nestedMappings' (empty list) this function does nothing
      *
-     * @param ideFrame The [JFrame] to attach the popup to
+     * @param editor The [JFrame] to attach the popup to
      * @param typedKeys The already typed key stroke sequence
      * @param nestedMappings A [List] of nested mappings to display
      * @param startTime Timestamp to consider for the calculation of the popup delay
      */
     @OptIn(DelicateCoroutinesApi::class)
-    fun showPopup(ideFrame: JFrame, typedKeys: List<KeyStroke>, nestedMappings: List<Pair<String, Mapping>>, startTime: Long) {
+    fun showPopup(editor: Editor, typedKeys: List<KeyStroke>, nestedMappings: List<Pair<String, Mapping>>, startTime: Long) {
         if (nestedMappings.isEmpty()) {
             return
         }
@@ -80,7 +81,7 @@ object PopupConfig {
          * the factor 0.65 was found by experimenting and comparing result lengths pixel by pixel
          * it might be erroneous and could change in the future
          */
-        val frameWidth = (ideFrame.width * 0.65).toInt()
+        val frameWidth = (editor.component.width * 0.65).toInt()
         // check for the longest string as this will most probably be the widest mapping
         val maxMapping = nestedMappings.maxByOrNull { (key, mapping) -> key.length + mapping.description.length }!! // (we have manually checked that 'nestedMappings' is not empty)
         // calculate the pixel width of the longest mapping string (with HTML formatting & styling)
@@ -128,7 +129,7 @@ object PopupConfig {
             mappingsStringBuilder.append(FormatConfig.formatTypedSequence(typedKeys))
         }
 
-        val target = RelativePoint.getSouthWestOf(ideFrame.rootPane)
+        val target = RelativePoint.getSouthOf(editor.component)
         val fadeoutTime = if (injector.globalOptions().timeout) {
             injector.globalOptions().timeoutlen.toLong()
         } else {

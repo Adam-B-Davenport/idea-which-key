@@ -3,6 +3,7 @@ package eu.theblob42.idea.whichkey
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.ex.AnActionListener
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.EditorKind
 import com.intellij.openapi.editor.actionSystem.ActionPlan
 import com.intellij.openapi.editor.actionSystem.TypedAction
 import com.intellij.openapi.editor.actionSystem.TypedActionHandler
@@ -120,8 +121,9 @@ class WhichKeyActionListener : AnActionListener {
         val mappingMode = vimEditor.mode.toMappingMode()
         val mappingState = KeyHandler.getInstance().keyHandlerState.mappingState
         val nestedMappings = getMappingsToDisplay(editor, typedKeySequence)
-        val window = WindowManager.getInstance().getFrame(editor.project)
-
+        if (editor.editorKind != EditorKind.MAIN_EDITOR) {
+            return
+        }
         if (nestedMappings.isEmpty()) {
             // insert mode "inserts" unmapped chars which we don't want to block
             // operator pending mode expects a motion which we can be anything and should not be blocked
@@ -138,7 +140,7 @@ class WhichKeyActionListener : AnActionListener {
                 return blockNextKeyPress(isShortcut, vimEditor, mappingState)
             }
         } else {
-            PopupConfig.showPopup(window!!, typedKeySequence, nestedMappings, startTime)
+            PopupConfig.showPopup(editor!!, typedKeySequence, nestedMappings, startTime)
         }
     }
 
